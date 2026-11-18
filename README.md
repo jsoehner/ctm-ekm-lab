@@ -1,10 +1,10 @@
-# CipherTrust Manager Community Edition — EKM Lab
+# CTM EKM Lab (CipherTrust Manager Community Edition)
 
-Companion infrastructure and bootstrap repository for running **Thales CipherTrust Manager Community Edition (CM CE)** and connecting it to [secure_crypto_reference_examples](https://github.com/jsoehner/secure_crypto_reference_examples).
+Companion infrastructure and bootstrap repository for running **Thales CipherTrust Manager Community Edition (CM CE)** and connecting it to [crypto-lab](https://github.com/jsoehner/crypto-lab).
 
 ## Why a Separate Repository?
 
-CipherTrust Manager Community Edition is distributed as a full virtual appliance (OVA/QCOW2/VHD) requiring ~8 GB RAM and portal-gated download. Separating appliance deployment and local lab PKI from `secure_crypto_reference_examples` keeps the cryptographic reference repo lightweight and CI-friendly.
+CipherTrust Manager Community Edition is distributed as a full virtual appliance (OVA/QCOW2/VHD) requiring ~8 GB RAM and portal-gated download. Separating appliance deployment and local lab PKI from `crypto-lab` keeps the cryptographic reference repo lightweight and CI-friendly.
 
 ## Quickstart
 
@@ -31,9 +31,9 @@ bash scripts/bootstrap_cm_ce.sh
 This creates `demo-app-kek` (AES-256) in CipherTrust Manager and writes `.env.ciphertrust` (git-ignored).
 
 ### 4. Run the Reference Client
-From `secure_crypto_reference_examples`:
+From `crypto-lab`:
 ```bash
-set -a && source /home/jsoehner/ciphertrust-ekm-lab/.env.ciphertrust && set +a
+set -a && source /home/jsoehner/ctm-ekm-lab/.env.ciphertrust && set +a
 python3 python/ciphertrust_ekm_example.py
 ```
 
