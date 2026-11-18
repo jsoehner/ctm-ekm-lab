@@ -1,0 +1,11 @@
+.env*
+!.env.example
+certs/
+*.pem
+*.key
+*.crt
+*.csr
+*.ova
+*.qcow2
+*.vhd
+__pycache__/
