@@ -8,7 +8,9 @@ CipherTrust Manager Community Edition is distributed as a full virtual appliance
 
 ## Quickstart
 
-### 1. Deploy CipherTrust Manager Community Edition
+### 1. Deploy CipherTrust Manager (Real Appliance OR Local Lab Mock)
+
+**Option A — Real CipherTrust Manager Community Edition Appliance:**
 1. Download the **CipherTrust Manager Community Edition** appliance (OVA or QCOW2) from the Thales Customer Support / Community portal.
 2. Boot the appliance with at least **2 vCPUs, 8 GB RAM, 100 GB disk** and complete the initial admin password + community license activation.
 3. Export the appliance URL:
@@ -17,6 +19,16 @@ CipherTrust Manager Community Edition is distributed as a full virtual appliance
    export CIPHERTRUST_USER="admin"
    export CIPHERTRUST_PASSWORD="<your-bootstrap-password>"
    ```
+
+**Option B — Local HTTPS + mTLS Lab Server (Immediate Testing Without Appliance):**
+```bash
+bash scripts/generate_mtls_certs.sh
+python3 mock-cm-ce/server.py &
+export CIPHERTRUST_URL="https://127.0.0.1:8443"
+export CIPHERTRUST_USER="admin"
+export CIPHERTRUST_PASSWORD="lab-bootstrap-pass"
+```
+*(Or run via Docker/Podman with `docker compose up -d`.)*
 
 ### 2. Generate Lab mTLS Certificates
 ```bash

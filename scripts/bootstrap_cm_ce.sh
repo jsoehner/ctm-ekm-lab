@@ -13,6 +13,9 @@ else
   echo "Warning: certs/lab-ca.crt not found; using -k for self-signed lab appliance."
   CURL_TLS_ARGS+=(-k)
 fi
+if [[ -f "$ROOT_DIR/certs/ekm-client.crt" && -f "$ROOT_DIR/certs/ekm-client.key" ]]; then
+  CURL_TLS_ARGS+=(--cert "$ROOT_DIR/certs/ekm-client.crt" --key "$ROOT_DIR/certs/ekm-client.key")
+fi
 
 echo "Authenticating to $CIPHERTRUST_URL ..."
 TOKEN=$(curl -sSf "${CURL_TLS_ARGS[@]}" -X POST "$CIPHERTRUST_URL/api/v1/auth/tokens" \
