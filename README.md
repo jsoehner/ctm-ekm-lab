@@ -2,6 +2,8 @@
 
 Companion infrastructure and bootstrap repository for running **Thales CipherTrust Manager Community Edition (CM CE)** and connecting it to [crypto-lab](https://github.com/jsoehner/crypto-lab).
 
+![Sovereign eKMS Control Plane: crypto-lab + ctm-ekm-lab](docs/assets/ekms-control-plane-infographic.jpg)
+
 ## Why a Separate Repository?
 
 CipherTrust Manager Community Edition is distributed as a full virtual appliance (OVA/QCOW2/VHD) requiring ~8 GB RAM and portal-gated download. Separating appliance deployment and local lab PKI from `crypto-lab` keeps the cryptographic reference repo lightweight and CI-friendly.
