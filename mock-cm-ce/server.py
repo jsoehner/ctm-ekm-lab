@@ -44,6 +44,29 @@ class CipherTrustHandler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def do_GET(self) -> None:  # noqa: N802
+        if not self._require_auth():
+            return
+        if self.path.startswith("/api/v1/vault/keys2/"):
+            name = self.path.split("/")[5]
+            rec = KEYS.get(name)
+            if not rec:
+                self._send_json(404, {"error": "Key not found"})
+                return
+            self._send_json(
+                200,
+                {
+                    "id": rec["id"],
+                    "name": name,
+                    "algorithm": "AES",
+                    "size": 256,
+                    "state": rec["state"],
+                    "version": rec["current_version"],
+                },
+            )
+            return
+        self._send_json(404, {"error": f"Unknown endpoint: {self.path}"})
+
     def do_POST(self) -> None:  # noqa: N802
         payload = self._read_json()
 
@@ -67,11 +90,22 @@ class CipherTrustHandler(BaseHTTPRequestHandler):
                 KEYS[name] = {
                     "id": f"cm-lab-{len(KEYS) + 1}",
                     "name": name,
-                    "material": os.urandom(32),
+                    "current_version": 1,
+                    "versions": {1: os.urandom(32)},
                     "state": "Active",
                 }
             rec = KEYS[name]
-            self._send_json(201, {"id": rec["id"], "name": name, "algorithm": "AES", "size": 256, "state": rec["state"]})
+            self._send_json(
+                201,
+                {
+                    "id": rec["id"],
+                    "name": name,
+                    "algorithm": "AES",
+                    "size": 256,
+                    "state": rec["state"],
+                    "version": rec["current_version"],
+                },
+            )
             return
 
         if self.path.startswith("/api/v1/vault/keys2/") and self.path.endswith("/deactivate"):
@@ -83,20 +117,43 @@ class CipherTrustHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"name": name, "state": "Deactivated"})
             return
 
+        if self.path.startswith("/api/v1/vault/keys2/") and self.path.endswith("/reactivate"):
+            name = self.path.split("/")[5]
+            if name not in KEYS:
+                self._send_json(404, {"error": "Key not found"})
+                return
+            KEYS[name]["state"] = "Active"
+            self._send_json(200, {"name": name, "state": "Active"})
+            return
+
+        if self.path.startswith("/api/v1/vault/keys2/") and self.path.endswith("/rotate"):
+            name = self.path.split("/")[5]
+            rec = KEYS.get(name)
+            if not rec:
+                self._send_json(404, {"error": "Key not found"})
+                return
+            new_ver = rec["current_version"] + 1
+            rec["current_version"] = new_ver
+            rec["versions"][new_ver] = os.urandom(32)
+            self._send_json(200, {"id": rec["id"], "name": name, "version": new_ver, "state": rec["state"]})
+            return
+
         if self.path == "/api/v1/crypto/encrypt":
             name = payload["id"]
             rec = KEYS.get(name)
             if not rec or rec["state"] != "Active":
                 self._send_json(403, {"error": "Key inactive or missing"})
                 return
+            ver = rec["current_version"]
             nonce = os.urandom(12)
             aad = base64.b64decode(payload.get("aad", "")) if payload.get("aad") else b""
             pt = base64.b64decode(payload["plaintext"])
-            ct_tag = AESGCM(rec["material"]).encrypt(nonce, pt, aad)
+            ct_tag = AESGCM(rec["versions"][ver]).encrypt(nonce, pt, aad)
             self._send_json(
                 200,
                 {
                     "id": rec["id"],
+                    "version": ver,
                     "ciphertext": base64.b64encode(ct_tag[:-16]).decode("ascii"),
                     "iv": base64.b64encode(nonce).decode("ascii"),
                     "tag": base64.b64encode(ct_tag[-16:]).decode("ascii"),
@@ -110,11 +167,20 @@ class CipherTrustHandler(BaseHTTPRequestHandler):
             if not rec or rec["state"] != "Active":
                 self._send_json(403, {"error": "Key inactive or missing"})
                 return
+            ver = int(payload.get("version", rec["current_version"]))
+            key_mat = rec["versions"].get(ver)
+            if not key_mat:
+                self._send_json(404, {"error": f"Key version {ver} not found"})
+                return
             nonce = base64.b64decode(payload["iv"])
             ct = base64.b64decode(payload["ciphertext"])
             tag = base64.b64decode(payload["tag"])
             aad = base64.b64decode(payload.get("aad", "")) if payload.get("aad") else b""
-            pt = AESGCM(rec["material"]).decrypt(nonce, ct + tag, aad)
+            try:
+                pt = AESGCM(key_mat).decrypt(nonce, ct + tag, aad)
+            except Exception:
+                self._send_json(400, {"error": "Decryption or authentication tag check failed"})
+                return
             self._send_json(200, {"plaintext": base64.b64encode(pt).decode("ascii")})
             return
 

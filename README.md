@@ -42,12 +42,26 @@ bash scripts/bootstrap_cm_ce.sh
 ```
 This creates `demo-app-kek` (AES-256) in CipherTrust Manager and writes `.env.ciphertrust` (git-ignored).
 
-### 4. Run the Reference Client
+### 4. Run `crypto-lab` Against This Instance
 From `crypto-lab`:
 ```bash
 set -a && source /home/jsoehner/ctm-ekm-lab/.env.ciphertrust && set +a
-python3 python/ciphertrust_ekm_example.py
+
+# Demo runner automatically detects CIPHERTRUST_URL and runs live EKM encryption
+./demo_langs.sh python
+
+# Runs all 13 offline unit tests + 8 live CTM integration tests (21 total)
+python3 -m unittest discover -s python -p 'test_*.py' -v
 ```
+
+### Supported Live Integration Test Cases (`test_ctm_integration.py`)
+- **Key Lifecycle & Metadata**: `POST /api/v1/vault/keys2`, `GET /api/v1/vault/keys2/{name}`
+- **Live DEK Envelope**: `POST /api/v1/crypto/encrypt` and `/decrypt` over HTTPS + mTLS
+- **AAD & Tamper Rejection**: Mismatched AAD (`HTTP 400`) and modified ciphertext (`InvalidTag`)
+- **Kill-Switch & Recovery**: `deactivate` (`HTTP 403` blocks decrypt) and `reactivate` (restores decrypt)
+- **Key Rotation**: `rotate` increments KEK to `v2` while `v1` envelopes continue to unwrap
+- **Multi-Tenant Isolation**: Revoking `ctm-tenant-a` does not affect `ctm-tenant-b`
+- **Negative Auth & mTLS**: Invalid credentials/JWT (`HTTP 401`) and missing client cert (`SSLError`)
 
 ## Cloud EKM Integration
 See [docs/azure-gcp-ekm-integration.md](docs/azure-gcp-ekm-integration.md) for wiring CM CE to **GCP Cloud EKM** and **Azure Cloud Key Management (CCKM)**.
