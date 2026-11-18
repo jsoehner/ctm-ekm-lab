@@ -65,5 +65,6 @@ python3 -m unittest discover -s python -p 'test_*.py' -v
 - **Multi-Tenant Isolation**: Revoking `ctm-tenant-a` does not affect `ctm-tenant-b`
 - **Negative Auth & mTLS**: Invalid credentials/JWT (`HTTP 401`) and missing client cert (`SSLError`)
 
-## Cloud EKM Integration
-See [docs/azure-gcp-ekm-integration.md](docs/azure-gcp-ekm-integration.md) for wiring CM CE to **GCP Cloud EKM** and **Azure Cloud Key Management (CCKM)**.
+## Cloud EKM Integration & Architectural Decisions
+- [Cloud EKM Integration Guide (Azure CCKM & GCP Cloud EKM)](docs/azure-gcp-ekm-integration.md)
+- [ADR-001: Local eKMS Control Plane and mTLS Architecture](ADRs/001-local-ekm-control-plane-and-mtls-architecture.md)
