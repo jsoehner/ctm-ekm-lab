@@ -66,5 +66,7 @@ python3 -m unittest discover -s python -p 'test_*.py' -v
 - **Negative Auth & mTLS**: Invalid credentials/JWT (`HTTP 401`) and missing client cert (`SSLError`)
 
 ## Cloud EKM Integration & Architectural Decisions
+- [Stage 2: Vault Transit + Keycloak OIDC EKM Proxy Guide](docs/vault-oidc-ekm-guide.md) *(absorbed from `ekm-demo`)*
+- [Stage 3: External KMS + Vault + Cloud/SaaS Multi-Cloud Architecture](docs/stage3-multi-cloud-architecture.md)
 - [Cloud EKM Integration Guide (Azure CCKM & GCP Cloud EKM)](docs/azure-gcp-ekm-integration.md)
 - [ADR-001: Local eKMS Control Plane and mTLS Architecture](ADRs/001-local-ekm-control-plane-and-mtls-architecture.md)
